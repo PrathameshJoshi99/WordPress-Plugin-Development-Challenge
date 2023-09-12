@@ -1,0 +1,62 @@
+1. Custom Fields Input Validation:
+
+For the custom fields (e.g., "position" and "company") that users enter when adding or editing testimonials, you should validate and sanitize the data. WordPress provides functions to help with this:
+
+// Save custom field values when the post is saved
+function save_testimonial_custom_fields($post_id) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+
+    // Validate and sanitize position and company fields
+    if (isset($_POST['position'])) {
+        $position = sanitize_text_field($_POST['position']);
+        update_post_meta($post_id, 'position', $position);
+    }
+    if (isset($_POST['company'])) {
+        $company = sanitize_text_field($_POST['company']);
+        update_post_meta($post_id, 'company', $company);
+    }
+}
+
+add_action('save_post', 'save_testimonial_custom_fields');
+
+2. Shortcode Attributes Validation:
+
+When parsing shortcode attributes, validate and sanitize them to prevent any malicious input:
+
+// Shortcode to display testimonials
+function testimonials_shortcode($atts) {
+    // Parse and validate shortcode attributes with default values
+    $atts = shortcode_atts(array(
+        'count' => -1, // Display all testimonials by default
+        'order' => 'date', // Order by date by default; options: 'date' or 'random'
+    ), $atts);
+
+    // Validate and sanitize attributes
+    $count = intval($atts['count']); // Ensure it's an integer
+    $order = in_array($atts['order'], array('date', 'random')) ? $atts['order'] : 'date'; // Ensure it's one of the allowed values
+
+    // Query testimonials based on validated attributes
+    $args = array(
+        'post_type' => 'testimonial',
+        'posts_per_page' => $count,
+        'orderby' => ($order === 'random') ? 'rand' : 'date',
+    );
+
+    // Rest of the shortcode function...
+}
+
+3. Input and Output Data Sanitization:
+
+When retrieving and displaying data, WordPress provides functions for sanitization and escaping, such as esc_html(), esc_attr(), and esc_url(). Use these functions to ensure that data displayed on the frontend is safe:
+
+// Display custom field values in the columns
+function display_testimonial_column($column, $post_id) {
+    switch ($column) {
+        case 'position':
+            echo esc_html(get_post_meta($post_id, 'position', true));
+            break;
+        case 'company':
+            echo esc_html(get_post_meta($post_id, 'company', true));
+            break;
+    }
+}
