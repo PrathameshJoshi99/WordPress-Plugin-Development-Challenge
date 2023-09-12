@@ -1,0 +1,50 @@
+Step 1: Define the Shortcode Function
+
+In your plugin file (e.g., testimonials-plugin.php), add a function that will handle the shortcode. This function will accept attributes for the number of testimonials and the order.
+
+// Shortcode to display testimonials
+function testimonials_shortcode($atts) {
+    // Parse shortcode attributes with default values
+    $atts = shortcode_atts(array(
+        'count' => -1, // Display all testimonials by default
+        'order' => 'date', // Order by date by default; options: 'date' or 'random'
+    ), $atts);
+
+    // Query testimonials based on shortcode attributes
+    $args = array(
+        'post_type' => 'testimonial',
+        'posts_per_page' => intval($atts['count']),
+        'orderby' => ($atts['order'] === 'random') ? 'rand' : 'date',
+    );
+
+    $testimonial_query = new WP_Query($args);
+
+    ob_start();
+
+    if ($testimonial_query->have_posts()) :
+        while ($testimonial_query->have_posts()) : $testimonial_query->the_post();
+            // Display each testimonial here
+            ?>
+            <div class="testimonial">
+                <h3><?php the_title(); ?></h3>
+                <p><?php echo esc_html(get_post_meta(get_the_ID(), 'position', true)); ?> at <?php echo esc_html(get_post_meta(get_the_ID(), 'company', true)); ?></p>
+                <blockquote><?php the_content(); ?></blockquote>
+            </div>
+            <?php
+        endwhile;
+        wp_reset_postdata();
+    else :
+        echo 'No testimonials found.';
+    endif;
+
+    return ob_get_clean();
+}
+
+// Register the shortcode
+add_shortcode('display_testimonials', 'testimonials_shortcode');
+
+Step 2: Use the Shortcode in Posts or Pages
+
+In any post or page where you want to display testimonials, you can use the [display_testimonials] shortcode like this:
+
+[display_testimonials count="5" order="random"]
