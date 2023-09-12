@@ -1,0 +1,103 @@
+Step 1: Add Custom Fields
+
+We'll add custom fields for the "position" and "company" of each testimonial. We'll also make sure these fields appear in the admin interface.
+
+Add the following code to your plugin file (e.g., testimonials-plugin.php) to define and display these fields:
+
+// Add custom fields for testimonials
+function add_testimonial_custom_fields() {
+    add_meta_box(
+        'testimonial_custom_fields',
+        'Testimonial Details',
+        'display_testimonial_custom_fields',
+        'testimonial',
+        'normal',
+        'default'
+    );
+}
+
+add_action('add_meta_boxes', 'add_testimonial_custom_fields');
+
+function display_testimonial_custom_fields($post) {
+    // Retrieve existing values of custom fields
+    $position = get_post_meta($post->ID, 'position', true);
+    $company = get_post_meta($post->ID, 'company', true);
+
+    // Display fields for position and company
+    ?>
+    <p>
+        <label for="position">Position:</label>
+        <input type="text" id="position" name="position" value="<?php echo esc_attr($position); ?>" />
+    </p>
+    <p>
+        <label for="company">Company:</label>
+        <input type="text" id="company" name="company" value="<?php echo esc_attr($company); ?>" />
+    </p>
+    <?php
+}
+
+// Save custom field values when the post is saved
+function save_testimonial_custom_fields($post_id) {
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+
+    // Save position and company fields
+    if (isset($_POST['position'])) {
+        update_post_meta($post_id, 'position', sanitize_text_field($_POST['position']));
+    }
+    if (isset($_POST['company'])) {
+        update_post_meta($post_id, 'company', sanitize_text_field($_POST['company']));
+    }
+}
+
+add_action('save_post', 'save_testimonial_custom_fields');
+
+Step 2: Improving the Testimonials List View
+
+To make it easier for administrators to manage testimonials, you can improve the list view by adding columns for "position" and "company." Add the following code to your plugin file:
+
+// Add custom columns to the testimonials list view
+function add_testimonial_columns($columns) {
+    $columns['position'] = 'Position';
+    $columns['company'] = 'Company';
+    return $columns;
+}
+
+add_filter('manage_testimonial_posts_columns', 'add_testimonial_columns');
+
+// Display custom field values in the columns
+function display_testimonial_column($column, $post_id) {
+    switch ($column) {
+        case 'position':
+            echo esc_html(get_post_meta($post_id, 'position', true));
+            break;
+        case 'company':
+            echo esc_html(get_post_meta($post_id, 'company', true));
+            break;
+    }
+}
+
+add_action('manage_testimonial_posts_custom_column', 'display_testimonial_column', 10, 2);
+
+Step 3: Adding a Delete Confirmation
+
+You can enhance the user experience by adding a confirmation dialog when administrators delete a testimonial. Add the following code:
+// Add a confirmation dialog for deleting testimonials
+function testimonial_delete_confirmation() {
+    global $post_type;
+    if ('testimonial' == $post_type) {
+        ?>
+        <script type="text/javascript">
+            jQuery(document).ready(function ($) {
+                $('#delete-action a.submitdelete').on('click', function (e) {
+                    if (!window.confirm('Are you sure you want to delete this testimonial? This action cannot be undone.')) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        </script>
+        <?php
+    }
+}
+
+add_action('admin_footer-edit.php', 'testimonial_delete_confirmation');
+
