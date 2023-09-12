@@ -1,0 +1,53 @@
+Step 1: Create the Plugin Directory
+
+Create a directory for your plugin within the wp-content/plugins directory of your WordPress installation. Give it a unique name, e.g., "testimonials-plugin."
+
+Step 2: Create the Main Plugin File
+
+Inside your plugin directory, create a main PHP file, e.g., testimonials-plugin.php, and add the following code to initialize your plugin:
+<?php
+/*
+Plugin Name: Testimonials Plugin
+Description: Adds a Testimonials custom post type to the website.
+Version: 1.0
+Author: Your Name
+*/
+
+// Register Testimonials Custom Post Type
+function create_testimonials_post_type() {
+    $labels = array(
+        'name'               => 'Testimonials',
+        'singular_name'      => 'Testimonial',
+        'menu_name'          => 'Testimonials',
+        'add_new'            => 'Add New',
+        'add_new_item'       => 'Add New Testimonial',
+        'edit'               => 'Edit',
+        'edit_item'          => 'Edit Testimonial',
+        'new_item'           => 'New Testimonial',
+        'view'               => 'View',
+        'view_item'          => 'View Testimonial',
+        'search_items'       => 'Search Testimonials',
+        'not_found'          => 'No Testimonials found',
+        'not_found_in_trash' => 'No Testimonials found in Trash',
+    );
+
+    $args = array(
+        'labels'              => $labels,
+        'public'              => true,
+        'has_archive'         => true,
+        'publicly_queryable'  => true,
+        'query_var'           => true,
+        'rewrite'             => array('slug' => 'testimonials'),
+        'capability_type'     => 'post',
+        'supports'            => array('title', 'editor', 'thumbnail'),
+    );
+
+    register_post_type('testimonial', $args);
+}
+
+add_action('init', 'create_testimonials_post_type');
+?>
+
+Step 3: Activate the Plugin
+
+Log in to your WordPress admin dashboard, go to the "Plugins" section, and activate your "Testimonials Plugin."
